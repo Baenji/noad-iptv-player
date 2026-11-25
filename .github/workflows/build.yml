@@ -90,4 +90,9 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           files: dist/*
+          name: noAd IPTV Player ${{ github.ref_name }}
+          prerelease: ${{ contains(github.ref_name, '-') }}
           generate_release_notes: true
+          body: |
+            **Windows:** `noAd-IPTV-Setup-….exe` herunterladen und ausführen.
+            **macOS:** `noAd-IPTV-macOS.zip` entpacken, App in „Programme“ ziehen, beim ersten Start Rechtsklick → „Öffnen“ (App ist nicht signiert).
