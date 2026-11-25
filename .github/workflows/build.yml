@@ -109,3 +109,11 @@ jobs:
           body: |
             **Windows:** `noAd-IPTV-Setup-….exe` herunterladen und ausführen.
             **macOS:** `noAd-IPTV-macOS.zip` entpacken, App in „Programme“ ziehen, beim ersten Start Rechtsklick → „Öffnen“ (App ist nicht signiert).
+      - name: Alte Vorabversionen entfernen
+        if: ${{ !contains(inputs.release_tag || github.ref_name, '-') }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for t in $(gh release list -R "${{ github.repository }}" --json tagName,isPrerelease --jq '.[] | select(.isPrerelease) | .tagName'); do
+            gh release delete "$t" -R "${{ github.repository }}" --cleanup-tag --yes
+          done
