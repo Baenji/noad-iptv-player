@@ -39,7 +39,8 @@ jobs:
       - run: flutter build windows --release
       - name: Version lesen
         shell: bash
-        run: echo "APP_VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: *//; s/+.*//')" >> $GITHUB_ENV
+        run: |
+          echo "APP_VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: *//; s/+.*//')" >> $GITHUB_ENV
       - name: Installer bauen (Inno Setup)
         shell: pwsh
         run: |
