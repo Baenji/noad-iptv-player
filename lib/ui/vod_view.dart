@@ -284,7 +284,7 @@ class SeriesDetail extends StatelessWidget {
                   icon: const Icon(Icons.close_rounded, size: 18, color: C.muted),
                   onPressed: () {
                     st.closeSeries();
-                    st.showView(View.series);
+                    st.showView(AppView.series);
                   },
                 ),
               ]),
@@ -499,7 +499,7 @@ class SearchView extends StatelessWidget {
                         showSource: true,
                         onOpenSeries: (s) {
                           st.setSearch('');
-                          st.showView(View.series);
+                          st.showView(AppView.series);
                           st.openSeriesDetail(s);
                         },
                       );

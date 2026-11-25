@@ -4,7 +4,7 @@ enum SourceType { xtream, m3uUrl, m3uFile }
 
 enum Section { live, movie, series }
 
-extension SectionLabel on Section {
+extension SectionName on Section {
   String get label => switch (this) {
         Section.live => 'Live-TV',
         Section.movie => 'Filme',
@@ -67,8 +67,8 @@ class Source {
   Source copy() => Source.fromJson(toJson());
 }
 
-class Category {
-  const Category(this.id, this.name);
+class MediaCategory {
+  const MediaCategory(this.id, this.name);
   final String id;
   final String name;
 }
@@ -141,7 +141,7 @@ class MediaItem {
 
 class Catalog {
   const Catalog(this.categories, this.items);
-  final List<Category> categories;
+  final List<MediaCategory> categories;
   final List<MediaItem> items;
 
   static const empty = Catalog([], []);

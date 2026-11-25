@@ -174,10 +174,10 @@ class _ParseArgs {
 Catalog _parseCatalog(_ParseArgs a) {
   final catsJson = jsonDecode(a.cats);
   final streamsJson = jsonDecode(a.streams);
-  final categories = <Category>[
+  final categories = <MediaCategory>[
     if (catsJson is List)
       for (final c in catsJson.whereType<Map>())
-        Category('${c['category_id']}', (c['category_name'] ?? '?').toString()),
+        MediaCategory('${c['category_id']}', (c['category_name'] ?? '?').toString()),
   ];
   final items = <MediaItem>[];
   if (streamsJson is List) {

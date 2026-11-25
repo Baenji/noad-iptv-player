@@ -193,7 +193,7 @@ class CategoryColumn extends StatelessWidget {
     final st = AppScope.of(context);
     final src = st.currentSource!;
     final ready = st.sectionState(src.id, section) == LoadState.ready;
-    final cats = ready ? st.categoriesWithCount(section) : const <(Category, int)>[];
+    final cats = ready ? st.categoriesWithCount(section) : const <(MediaCategory, int)>[];
     final total = ready ? st.catalog(src.id, section).items.length : 0;
     final favCount = st.favorites.items.where((i) => i.section == section && i.sourceId == src.id).length;
     final sel = st.selectedCategory[section];
@@ -377,7 +377,7 @@ class ItemRow extends StatelessWidget {
       if (onOpenSeries != null) {
         onOpenSeries!(item);
       } else {
-        st.showView(View.series);
+        st.showView(AppView.series);
         st.openSeriesDetail(item);
       }
       return;

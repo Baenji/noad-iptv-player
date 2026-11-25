@@ -80,12 +80,12 @@ class Shell extends StatelessWidget {
     if (st.sources.isEmpty) return const Onboarding();
 
     final Widget content = switch (st.view) {
-      View.live => const LiveView(),
-      View.movie => const VodView(key: ValueKey('movie'), section: Section.movie),
-      View.series => const VodView(key: ValueKey('series'), section: Section.series),
-      View.resume => const ResumeView(),
-      View.list => const UserListView(),
-      View.search => const SearchView(),
+      AppView.live => const LiveView(),
+      AppView.movie => const VodView(key: ValueKey('movie'), section: Section.movie),
+      AppView.series => const VodView(key: ValueKey('series'), section: Section.series),
+      AppView.resume => const ResumeView(),
+      AppView.list => const UserListView(),
+      AppView.search => const SearchView(),
     };
 
     return Focus(

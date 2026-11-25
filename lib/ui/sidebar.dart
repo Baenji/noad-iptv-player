@@ -32,13 +32,13 @@ class Sidebar extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             children: [
-              _NavItem(icon: Icons.live_tv_rounded, label: 'Live-TV', view: View.live),
-              _NavItem(icon: Icons.movie_outlined, label: 'Filme', view: View.movie),
-              _NavItem(icon: Icons.video_library_outlined, label: 'Serien', view: View.series),
+              _NavItem(icon: Icons.live_tv_rounded, label: 'Live-TV', view: AppView.live),
+              _NavItem(icon: Icons.movie_outlined, label: 'Filme', view: AppView.movie),
+              _NavItem(icon: Icons.video_library_outlined, label: 'Serien', view: AppView.series),
               _NavItem(
                 icon: Icons.history_rounded,
                 label: 'Weiterschauen',
-                view: View.resume,
+                view: AppView.resume,
                 count: st.resumeList.length,
               ),
               const SectionLabel('Meine Listen', padding: EdgeInsets.fromLTRB(10, 22, 10, 8)),
@@ -60,7 +60,7 @@ class _NavItem extends StatelessWidget {
   const _NavItem({required this.icon, required this.label, required this.view, this.count});
   final IconData icon;
   final String label;
-  final View view;
+  final AppView view;
   final int? count;
 
   @override
@@ -99,14 +99,14 @@ class _ListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final st = AppScope.of(context);
-    final sel = st.view == View.list && st.currentListId == list.id;
+    final sel = st.view == AppView.list && st.currentListId == list.id;
     return Padding(
       padding: const EdgeInsets.only(bottom: 2),
       child: Tile(
         height: 36,
         selected: sel,
         accentBar: false,
-        onTap: () => st.showView(View.list, listId: list.id),
+        onTap: () => st.showView(AppView.list, listId: list.id),
         onSecondaryTapDown: list.isFavorites
             ? null
             : (d) => _menu(context, d.globalPosition, st),

@@ -11,7 +11,7 @@ import '../services/storage.dart';
 import '../services/xtream.dart';
 
 /// Was in der Hauptfläche angezeigt wird.
-enum View { live, movie, series, resume, list, search }
+enum AppView { live, movie, series, resume, list, search }
 
 enum LoadState { idle, loading, ready, error }
 
@@ -81,7 +81,7 @@ class AppState extends ChangeNotifier {
   final Map<String, XtreamClient> _clients = {};
 
   // ----------------------------------------------------------- Navigation
-  View view = View.live;
+  AppView view = AppView.live;
   String? currentSourceId;
   String? currentListId;
   final Map<Section, String?> selectedCategory = {};
@@ -205,9 +205,9 @@ class AppState extends ChangeNotifier {
   }
 
   Section? get sectionForView => switch (view) {
-        View.live => Section.live,
-        View.movie => Section.movie,
-        View.series => Section.series,
+        AppView.live => Section.live,
+        AppView.movie => Section.movie,
+        AppView.series => Section.series,
         _ => null,
       };
 
@@ -225,7 +225,7 @@ class AppState extends ChangeNotifier {
   }
 
   /// Kategorien mit Anzahl, in Server-Reihenfolge.
-  List<(Category, int)> categoriesWithCount(Section section) {
+  List<(MediaCategory, int)> categoriesWithCount(Section section) {
     final src = currentSource;
     if (src == null) return const [];
     final c = catalog(src.id, section);
@@ -233,7 +233,7 @@ class AppState extends ChangeNotifier {
     for (final i in c.items) {
       counts[i.categoryId] = (counts[i.categoryId] ?? 0) + 1;
     }
-    final out = <(Category, int)>[];
+    final out = <(MediaCategory, int)>[];
     final known = <String>{};
     for (final cat in c.categories) {
       known.add(cat.id);
@@ -243,7 +243,7 @@ class AppState extends ChangeNotifier {
     for (final e in counts.entries) {
       if (!known.contains(e.key)) {
         final label = (e.key.isEmpty || e.key == 'null') ? 'Ohne Kategorie' : e.key;
-        out.add((Category(e.key, label), e.value));
+        out.add((MediaCategory(e.key, label), e.value));
       }
     }
     return out;
@@ -260,11 +260,11 @@ class AppState extends ChangeNotifier {
   }
 
   // ----------------------------------------------------------- Navigation
-  void showView(View v, {String? listId}) {
+  void showView(AppView v, {String? listId}) {
     view = v;
     if (listId != null) currentListId = listId;
-    if (v != View.search) search = '';
-    if (v != View.series) closeSeries();
+    if (v != AppView.search) search = '';
+    if (v != AppView.series) closeSeries();
     final sec = sectionForView;
     final src = currentSource;
     if (sec != null && src != null) loadSection(src, sec);
@@ -276,7 +276,7 @@ class AppState extends ChangeNotifier {
     _storage.lastSourceId = id;
     selectedCategory.clear();
     closeSeries();
-    if (view != View.movie && view != View.series) view = View.live;
+    if (view != AppView.movie && view != AppView.series) view = AppView.live;
     final src = currentSource!;
     loadSection(src, sectionForView ?? Section.live);
     notifyListeners();
@@ -290,12 +290,12 @@ class AppState extends ChangeNotifier {
   void setSearch(String q) {
     search = q;
     if (q.trim().isNotEmpty) {
-      if (view != View.search) {
-        view = View.search;
+      if (view != AppView.search) {
+        view = AppView.search;
         _ensureAllLoaded();
       }
-    } else if (view == View.search) {
-      view = View.live;
+    } else if (view == AppView.search) {
+      view = AppView.live;
     }
     notifyListeners();
   }
@@ -450,7 +450,7 @@ class AppState extends ChangeNotifier {
   List<MediaItem> get zapList {
     final cur = current;
     if (cur == null) return const [];
-    if (view == View.list) {
+    if (view == AppView.list) {
       return currentList?.items.where((i) => i.url != null).toList() ?? const [];
     }
     if (cur.isLive) {
@@ -598,7 +598,7 @@ class AppState extends ChangeNotifier {
   VoidCallback deleteList(UserList l) {
     final index = lists.indexOf(l);
     lists.remove(l);
-    if (currentListId == l.id && view == View.list) view = View.live;
+    if (currentListId == l.id && view == AppView.list) view = AppView.live;
     _storage.saveLists(lists);
     notifyListeners();
     return () {

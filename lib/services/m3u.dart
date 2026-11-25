@@ -45,7 +45,7 @@ final _attrRe = RegExp(r'([\w-]+)="([^"]*)"');
 
 Map<Section, Catalog> parseM3u(String text, String sourceId) {
   final items = <Section, List<MediaItem>>{for (final s in Section.values) s: []};
-  final cats = <Section, List<Category>>{for (final s in Section.values) s: []};
+  final cats = <Section, List<MediaCategory>>{for (final s in Section.values) s: []};
   final seen = <Section, Set<String>>{for (final s in Section.values) s: {}};
 
   Map<String, String>? attrs;
@@ -88,7 +88,7 @@ Map<Section, Catalog> parseM3u(String text, String sourceId) {
           ? name!
           : (attrs?['tvg-name'] ?? url.split('/').last);
       final g = (group == null || group.trim().isEmpty) ? 'Ohne Gruppe' : group.trim();
-      if (seen[section]!.add(g)) cats[section]!.add(Category(g, g));
+      if (seen[section]!.add(g)) cats[section]!.add(MediaCategory(g, g));
       final logo = attrs?['tvg-logo'];
       items[section]!.add(MediaItem(
         sourceId: sourceId,
