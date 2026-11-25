@@ -463,3 +463,109 @@ class MenuRow extends StatelessWidget {
         Text(label),
       ]);
 }
+
+/// Scrollbar, die mit ihrer Liste verbunden ist: Daumen lässt sich ziehen,
+/// Klick in die Leiste springt seitenweise.
+class ScrollArea extends StatefulWidget {
+  const ScrollArea({super.key, required this.builder});
+  final Widget Function(ScrollController controller) builder;
+
+  @override
+  State<ScrollArea> createState() => _ScrollAreaState();
+}
+
+class _ScrollAreaState extends State<ScrollArea> {
+  final _ctrl = ScrollController();
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Scrollbar(
+        controller: _ctrl,
+        interactive: true,
+        thumbVisibility: true,
+        child: ScrollConfiguration(
+          // Die eigene Scrollbar ersetzt die automatische.
+          behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+          child: widget.builder(_ctrl),
+        ),
+      );
+}
+
+/// Spalte mit fester, per Ziehgriff änderbarer Breite. Die Breite wird gespeichert.
+class ResizablePane extends StatefulWidget {
+  const ResizablePane({
+    super.key,
+    required this.id,
+    required this.child,
+    this.initial = 300,
+    this.min = 180,
+    this.max = 640,
+    this.handleLeft = false,
+  });
+
+  final String id;
+  final Widget child;
+  final double initial;
+  final double min;
+  final double max;
+
+  /// Griff links statt rechts (für Panels am rechten Rand).
+  final bool handleLeft;
+
+  @override
+  State<ResizablePane> createState() => _ResizablePaneState();
+}
+
+class _ResizablePaneState extends State<ResizablePane> {
+  bool _hover = false;
+  bool _drag = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final st = AppScope.of(context);
+    final width = st.paneWidth(widget.id, widget.initial).clamp(widget.min, widget.max).toDouble();
+    final active = _hover || _drag;
+    final handle = MouseRegion(
+      cursor: SystemMouseCursors.resizeColumn,
+      onEnter: (_) => setState(() => _hover = true),
+      onExit: (_) => setState(() => _hover = false),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onHorizontalDragStart: (_) => setState(() => _drag = true),
+        onHorizontalDragUpdate: (d) {
+          final delta = widget.handleLeft ? -d.delta.dx : d.delta.dx;
+          st.setPaneWidth(widget.id, (width + delta).clamp(widget.min, widget.max).toDouble(), save: false);
+        },
+        onHorizontalDragEnd: (_) {
+          setState(() => _drag = false);
+          st.setPaneWidth(widget.id, width);
+        },
+        onDoubleTap: () => st.setPaneWidth(widget.id, widget.initial),
+        child: Tooltip(
+          message: 'Ziehen zum Ändern der Breite · Doppelklick: Standard',
+          waitDuration: const Duration(seconds: 1),
+          child: SizedBox(
+            width: 7,
+            child: Center(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 120),
+                width: active ? 3 : 1,
+                color: active ? C.accent : C.border,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    return Row(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      if (widget.handleLeft) handle,
+      SizedBox(width: width, child: widget.child),
+      if (!widget.handleLeft) handle,
+    ]);
+  }
+}

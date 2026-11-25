@@ -75,6 +75,17 @@ class AppState extends ChangeNotifier {
   // ------------------------------------------------------------- Oberfläche
   late bool sidebarCollapsed;
 
+  final Map<String, double> _paneWidths = {};
+
+  double paneWidth(String id, double fallback) =>
+      _paneWidths[id] ??= _storage.paneWidth(id) ?? fallback;
+
+  void setPaneWidth(String id, double w, {bool save = true}) {
+    _paneWidths[id] = w;
+    if (save) _storage.setPaneWidth(id, w);
+    notifyListeners();
+  }
+
   void toggleSidebar() {
     sidebarCollapsed = !sidebarCollapsed;
     _storage.sidebarCollapsed = sidebarCollapsed;

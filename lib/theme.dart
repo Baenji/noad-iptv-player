@@ -78,10 +78,22 @@ ThemeData buildTheme() {
       color: C.surfaceHi,
       textStyle: TextStyle(color: C.text, fontSize: 14),
     ),
-    scrollbarTheme: const ScrollbarThemeData(
-      thumbColor: WidgetStatePropertyAll(C.border2),
-      thickness: WidgetStatePropertyAll(6),
-      radius: Radius.circular(3),
+    scrollbarTheme: ScrollbarThemeData(
+      thumbColor: WidgetStateProperty.resolveWith(
+        (s) => s.contains(WidgetState.dragged)
+            ? C.accent
+            : s.contains(WidgetState.hovered)
+                ? const Color(0xFF4A5160)
+                : C.border2,
+      ),
+      thickness: WidgetStateProperty.resolveWith(
+        (s) => s.contains(WidgetState.hovered) || s.contains(WidgetState.dragged) ? 10 : 6,
+      ),
+      trackVisibility: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.hovered)),
+      trackColor: const WidgetStatePropertyAll(Color(0x0DFFFFFF)),
+      trackBorderColor: const WidgetStatePropertyAll(Colors.transparent),
+      radius: const Radius.circular(5),
+      interactive: true,
     ),
     sliderTheme: const SliderThemeData(
       activeTrackColor: C.accent,

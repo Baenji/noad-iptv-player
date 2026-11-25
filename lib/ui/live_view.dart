@@ -44,7 +44,7 @@ class _HeaderState extends State<Header> {
     final accText = [
       if (acc?.expires != null)
         'Gültig bis ${acc!.expires!.day.toString().padLeft(2, '0')}.${acc.expires!.month.toString().padLeft(2, '0')}.${acc.expires!.year}',
-      if (acc?.maxCons != null) '${acc!.activeCons ?? 0}/${acc.maxCons} Verbindungen',
+      if (acc?.maxCons != null) '${acc!.maxCons} ${acc.maxCons == 1 ? 'Stream' : 'Streams'} gleichzeitig',
     ].join(' · ');
     return Container(
       height: 64,
@@ -120,12 +120,15 @@ class LiveView extends StatelessWidget {
               )
             : Row(children: [
                 const CategoryColumn(section: Section.live),
-                Container(
-                  width: 380,
-                  decoration: const BoxDecoration(border: Border(right: BorderSide(color: C.border))),
+                ResizablePane(
+                  id: 'live_list',
+                  initial: 380,
+                  min: 260,
+                  max: 720,
                   child: SectionBody(
                     section: Section.live,
                     builder: (items) => ItemList(
+                      key: ValueKey('live_${st.currentSourceId}_${st.selectedCategory[Section.live]}'),
                       items: items,
                       header: _listHeader(st, items.length),
                       emptyText: st.selectedCategory[Section.live] == '__fav__'
@@ -219,17 +222,20 @@ class CategoryColumn extends StatelessWidget {
           ),
         );
 
-    return Container(
-      width: 232,
-      decoration: const BoxDecoration(border: Border(right: BorderSide(color: C.border))),
+    return ResizablePane(
+      id: 'categories',
+      initial: 232,
+      min: 160,
+      max: 480,
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         const SectionLabel('Kategorien', padding: EdgeInsets.fromLTRB(20, 18, 10, 10)),
         Expanded(
           child: !ready
               ? const SizedBox()
-              : Scrollbar(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 16),
+              : ScrollArea(
+                  builder: (ctrl) => ListView.builder(
+                    controller: ctrl,
+                    padding: const EdgeInsets.fromLTRB(10, 0, 16, 16),
                     itemCount: cats.length + 2,
                     itemBuilder: (_, i) {
                       if (i == 0) return row('__fav__', 'Favoriten', favCount, icon: Icons.star_rounded);
@@ -283,14 +289,17 @@ class ItemList extends StatelessWidget {
           onOpenSeries: onOpenSeries,
         );
     final list = reorderList != null
-        ? ReorderableListView.builder(
+        ? ScrollArea(
+            builder: (ctrl) => ReorderableListView.builder(
+            scrollController: ctrl,
             buildDefaultDragHandles: true,
             itemCount: items.length,
             onReorder: (a, b) => st.moveInList(reorderList!, a, b),
             itemBuilder: (_, i) => tile(i),
-          )
-        : Scrollbar(
-            child: ListView.builder(
+          ))
+        : ScrollArea(
+            builder: (ctrl) => ListView.builder(
+              controller: ctrl,
               itemCount: items.length,
               itemExtent: 66,
               itemBuilder: (_, i) => tile(i),
@@ -333,7 +342,7 @@ class ItemRow extends StatelessWidget {
         radius: 0,
         selected: selected,
         selectedColor: C.surfaceSel,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.fromLTRB(16, 0, 22, 0),
         onTap: () => _activate(context),
         onSecondaryTapDown: (d) => showItemMenu(context, item, d.globalPosition),
         child: Row(children: [

@@ -34,7 +34,15 @@ class VodView extends StatelessWidget {
                     builder: (items) => _Grid(section: section, items: items),
                   ),
                 ),
-                if (section == Section.series && st.openSeries != null) const SeriesDetail(),
+                if (section == Section.series && st.openSeries != null)
+                  const ResizablePane(
+                    id: 'series_detail',
+                    initial: 380,
+                    min: 320,
+                    max: 640,
+                    handleLeft: true,
+                    child: SeriesDetail(),
+                  ),
               ]),
       ),
     ]);
@@ -62,8 +70,9 @@ class _Grid extends StatelessWidget {
         text: st.selectedCategory[section] == '__fav__' ? 'Rechtsklick auf ein Poster → „Zu Favoriten“.' : null,
       );
     }
-    return Scrollbar(
-      child: CustomScrollView(slivers: [
+    return ScrollArea(
+      key: ValueKey('grid_${section.name}_${st.currentSourceId}_${st.selectedCategory[section]}'),
+      builder: (ctrl) => CustomScrollView(controller: ctrl, slivers: [
         if (resume.isNotEmpty && noCategory) ...[
           const SliverPadding(
             padding: EdgeInsets.fromLTRB(24, 20, 24, 12),
@@ -259,11 +268,7 @@ class SeriesDetail extends StatelessWidget {
     }
 
     return Container(
-      width: 380,
-      decoration: const BoxDecoration(
-        color: C.sidebar,
-        border: Border(left: BorderSide(color: C.border)),
-      ),
+      color: C.sidebar,
       padding: const EdgeInsets.all(24),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -345,7 +350,10 @@ class SeriesDetail extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Expanded(
-            child: ListView.builder(
+            child: ScrollArea(
+              key: ValueKey('eps_$season'),
+              builder: (ctrl) => ListView.builder(
+              controller: ctrl,
               itemCount: list.length,
               itemBuilder: (_, i) {
                 final ep = list[i];
@@ -379,7 +387,7 @@ class SeriesDetail extends StatelessWidget {
                   ),
                 );
               },
-            ),
+            )),
           ),
         ],
       ]),
@@ -404,7 +412,9 @@ class ResumeView extends StatelessWidget {
                 title: 'Noch nichts angefangen',
                 text: 'Filme und Episoden, die du nicht zu Ende schaust, erscheinen hier – mit der Stelle, an der du aufgehört hast.',
               )
-            : GridView.builder(
+            : ScrollArea(
+                builder: (ctrl) => GridView.builder(
+                controller: ctrl,
                 padding: const EdgeInsets.all(24),
                 gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                   maxCrossAxisExtent: 252,
@@ -414,7 +424,7 @@ class ResumeView extends StatelessWidget {
                 ),
                 itemCount: list.length,
                 itemBuilder: (_, i) => ResumeCard(progress: list[i]),
-              ),
+              )),
       ),
     ]);
   }
@@ -433,10 +443,13 @@ class UserListView extends StatelessWidget {
       Header(title: l.name, subtitle: '${l.items.length} Einträge'),
       Expanded(
         child: Row(children: [
-          Container(
-            width: 420,
-            decoration: const BoxDecoration(border: Border(right: BorderSide(color: C.border))),
+          ResizablePane(
+            id: 'userlist',
+            initial: 420,
+            min: 280,
+            max: 760,
             child: ItemList(
+              key: ValueKey('list_${l.id}'),
               items: l.items,
               showSource: true,
               reorderList: l,
@@ -476,16 +489,20 @@ class SearchView extends StatelessWidget {
       Header(title: 'Suche', subtitle: '„${st.search.trim()}“ in allen Quellen'),
       Expanded(
         child: Row(children: [
-          Container(
-            width: 460,
-            decoration: const BoxDecoration(border: Border(right: BorderSide(color: C.border))),
+          ResizablePane(
+            id: 'search',
+            initial: 460,
+            min: 300,
+            max: 800,
             child: rows.isEmpty
                 ? EmptyState(
                     icon: Icons.search_off_rounded,
                     title: st.anyLoading ? 'Quellen werden noch geladen…' : 'Nichts gefunden',
                     text: st.anyLoading ? null : 'Anderen Begriff versuchen oder Schreibweise prüfen.',
                   )
-                : ListView.builder(
+                : ScrollArea(
+                    builder: (ctrl) => ListView.builder(
+                    controller: ctrl,
                     itemCount: rows.length,
                     itemBuilder: (_, i) {
                       final r = rows[i];
@@ -504,7 +521,7 @@ class SearchView extends StatelessWidget {
                         },
                       );
                     },
-                  ),
+                  ),)
           ),
           const Expanded(child: PlayerPanel()),
         ]),

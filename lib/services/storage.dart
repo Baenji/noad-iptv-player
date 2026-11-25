@@ -56,6 +56,9 @@ class Storage {
   double get volume => _prefs.getDouble('volume') ?? 80;
   set volume(double v) => _prefs.setDouble('volume', v);
 
+  double? paneWidth(String id) => _prefs.getDouble('pane_$id');
+  void setPaneWidth(String id, double w) => _prefs.setDouble('pane_$id', w);
+
   bool get sidebarCollapsed => _prefs.getBool('sidebarCollapsed') ?? false;
   set sidebarCollapsed(bool v) => _prefs.setBool('sidebarCollapsed', v);
 
