@@ -62,19 +62,6 @@ class _SourceDialogState extends State<SourceDialog> {
       ..user = _user.text.trim()
       ..pass = _pass.text.trim()
       ..url = _url.text.trim();
-    // get.php-Link mit Zugangsdaten automatisch als Xtream behandeln.
-    if (s.type == SourceType.m3uUrl && s.url.contains('get.php')) {
-      final uri = Uri.tryParse(s.url);
-      final u = uri?.queryParameters['username'];
-      final p = uri?.queryParameters['password'];
-      if (uri != null && u != null && p != null) {
-        s
-          ..type = SourceType.xtream
-          ..server = '${uri.scheme}://${uri.authority}'
-          ..user = u
-          ..pass = p;
-      }
-    }
     if (s.name.isEmpty) {
       s.name = switch (s.type) {
         SourceType.xtream => Uri.tryParse(s.server.startsWith('http') ? s.server : 'http://${s.server}')?.host ?? 'Xtream',
@@ -82,6 +69,29 @@ class _SourceDialogState extends State<SourceDialog> {
         SourceType.m3uFile => s.path.split(RegExp(r'[\\/]')).last.replaceAll(RegExp(r'\.m3u8?$'), ''),
       };
     }
+  }
+
+  /// Zugangsdaten aus einem get.php-Link, falls vorhanden.
+  (String, String, String)? get _xtreamFromUrl {
+    final uri = Uri.tryParse(_url.text.trim());
+    if (uri == null || !uri.path.endsWith('get.php')) return null;
+    final u = uri.queryParameters['username'];
+    final p = uri.queryParameters['password'];
+    if (u == null || p == null) return null;
+    return ('${uri.scheme}://${uri.authority}', u, p);
+  }
+
+  void _switchToXtream() {
+    final x = _xtreamFromUrl;
+    if (x == null) return;
+    setState(() {
+      s.type = SourceType.xtream;
+      _server.text = x.$1;
+      _user.text = x.$2;
+      _pass.text = x.$3;
+      _error = null;
+      _testOk = null;
+    });
   }
 
   String? _validate() {
@@ -242,10 +252,20 @@ class _SourceDialogState extends State<SourceDialog> {
             ),
           ]),
         ],
-        if (s.type == SourceType.m3uUrl)
-          _field('Playlist-Link', _url,
-              hint: 'https://…/playlist.m3u',
-              help: 'Ein get.php-Link mit Benutzer und Passwort wird automatisch als Xtream erkannt.'),
+        if (s.type == SourceType.m3uUrl) ...[
+          _field('Playlist-Link', _url, hint: 'https://…/playlist.m3u'),
+          if (_xtreamFromUrl != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Row(children: [
+                const Expanded(
+                  child: Text('Der Link enthält Xtream-Zugangsdaten. Als Xtream gibt es Serien mit Staffeln und Episoden.',
+                      style: TextStyle(fontSize: 12, color: C.faint)),
+                ),
+                TextButton(onPressed: _switchToXtream, child: const Text('Als Xtream einrichten')),
+              ]),
+            ),
+        ],
         if (s.type == SourceType.m3uFile)
           InkWell(
             borderRadius: BorderRadius.circular(12),
