@@ -44,7 +44,6 @@ class _HeaderState extends State<Header> {
     final accText = [
       if (acc?.expires != null)
         'Gültig bis ${acc!.expires!.day.toString().padLeft(2, '0')}.${acc.expires!.month.toString().padLeft(2, '0')}.${acc.expires!.year}',
-      if (acc?.maxCons != null) '${acc!.maxCons} ${acc.maxCons == 1 ? 'Stream' : 'Streams'} gleichzeitig',
     ].join(' · ');
     return Container(
       height: 64,
