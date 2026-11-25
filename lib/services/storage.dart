@@ -55,4 +55,11 @@ class Storage {
 
   double get volume => _prefs.getDouble('volume') ?? 80;
   set volume(double v) => _prefs.setDouble('volume', v);
+
+  bool get sidebarCollapsed => _prefs.getBool('sidebarCollapsed') ?? false;
+  set sidebarCollapsed(bool v) => _prefs.setBool('sidebarCollapsed', v);
+
+  String? get dismissedUpdate => _prefs.getString('dismissedUpdate');
+  set dismissedUpdate(String? v) =>
+      v == null ? _prefs.remove('dismissedUpdate') : _prefs.setString('dismissedUpdate', v);
 }

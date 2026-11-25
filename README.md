@@ -20,7 +20,9 @@ Schlanker, werbefreier IPTV-Player für **Xtream Codes** und **M3U** – Windows
 | Esc | Vollbild beenden |
 | ↑ / ↓ | Vorheriger / nächster Sender |
 | ← / → | 10 s zurück / vor (Filme) |
+| M | Stumm |
 | Z | Senderliste im Vollbild |
+| Strg/⌘ + B | Seitenleiste ein-/ausklappen |
 | Strg/⌘ + K | Suche |
 
 ## Herunterladen

@@ -394,10 +394,17 @@ Future<void> showItemMenu(BuildContext context, MediaItem item, Offset pos) asyn
     context: context,
     position: RelativeRect.fromLTRB(pos.dx, pos.dy, pos.dx, pos.dy),
     items: [
-      if (!item.isSeries) const PopupMenuItem(value: 'play', child: Text('Abspielen')),
-      PopupMenuItem(value: 'fav', child: Text(fav ? 'Aus Favoriten entfernen' : 'Zu Favoriten')),
-      const PopupMenuItem(value: 'list', child: Text('Zu Liste…')),
-      if (item.url != null) const PopupMenuItem(value: 'copy', child: Text('Stream-URL kopieren')),
+      if (!item.isSeries)
+        const PopupMenuItem(value: 'play', child: MenuRow(Icons.play_arrow_rounded, 'Abspielen')),
+      PopupMenuItem(
+        value: 'fav',
+        child: MenuRow(fav ? Icons.star_rounded : Icons.star_outline_rounded,
+            fav ? 'Aus Favoriten entfernen' : 'Zu Favoriten',
+            color: C.star),
+      ),
+      const PopupMenuItem(value: 'list', child: MenuRow(Icons.playlist_add_rounded, 'Zu Liste…')),
+      if (item.url != null)
+        const PopupMenuItem(value: 'copy', child: MenuRow(Icons.link_rounded, 'Stream-URL kopieren')),
     ],
   );
   if (!context.mounted) return;

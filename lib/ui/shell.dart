@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../models.dart';
 import '../state/app_state.dart';
@@ -28,6 +29,10 @@ class Shell extends StatelessWidget {
     final hw = HardwareKeyboard.instance;
     final mod = hw.isControlPressed || hw.isMetaPressed;
 
+    if (mod && k == LogicalKeyboardKey.keyB) {
+      st.toggleSidebar();
+      return KeyEventResult.handled;
+    }
     if (mod && k == LogicalKeyboardKey.keyK) {
       if (st.fullscreen) exitFullscreen(st);
       searchFocus.requestFocus();
@@ -54,6 +59,10 @@ class Shell extends StatelessWidget {
     if (k == LogicalKeyboardKey.keyF && !mod) {
       if (st.current == null) return KeyEventResult.ignored;
       st.fullscreen ? exitFullscreen(st) : enterFullscreen(st);
+      return KeyEventResult.handled;
+    }
+    if (k == LogicalKeyboardKey.keyM && !mod) {
+      st.toggleMute();
       return KeyEventResult.handled;
     }
     if (k == LogicalKeyboardKey.keyZ && st.fullscreen) {
@@ -94,7 +103,12 @@ class Shell extends StatelessWidget {
       child: Stack(children: [
         Row(children: [
           const Sidebar(),
-          Expanded(child: content),
+          Expanded(
+            child: Column(children: [
+              if (st.update != null) const _UpdateBanner(),
+              Expanded(child: content),
+            ]),
+          ),
         ]),
         if (st.fullscreen)
           Positioned.fill(child: FullscreenPlayer(key: fullscreenKey)),
@@ -176,6 +190,63 @@ class Onboarding extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Hinweis auf eine neue Version.
+class _UpdateBanner extends StatelessWidget {
+  const _UpdateBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    final st = AppScope.of(context);
+    final u = st.update!;
+    return Container(
+      height: 48,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      decoration: const BoxDecoration(
+        color: Color(0xFF12231E),
+        border: Border(bottom: BorderSide(color: Color(0xFF1F4A3C))),
+      ),
+      child: Row(children: [
+        const Icon(Icons.system_update_alt_rounded, size: 18, color: C.accent),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text.rich(
+            TextSpan(children: [
+              TextSpan(text: 'Version ${u.version} ist verfügbar', style: const TextStyle(fontWeight: FontWeight.w600)),
+              TextSpan(text: '  ·  installiert: ${st.appVersion}', style: const TextStyle(color: C.muted)),
+            ]),
+            style: const TextStyle(fontSize: 13, color: Color(0xFFBFEFDF)),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        TextButton(
+          onPressed: () => launchUrl(Uri.parse(u.pageUrl), mode: LaunchMode.externalApplication),
+          child: const Text('Was ist neu?', style: TextStyle(color: C.text2)),
+        ),
+        const SizedBox(width: 8),
+        SizedBox(
+          height: 34,
+          child: FilledButton.icon(
+            onPressed: () => launchUrl(Uri.parse(u.downloadUrl), mode: LaunchMode.externalApplication),
+            icon: const Icon(Icons.download_rounded, size: 18),
+            label: const Text('Herunterladen', style: TextStyle(fontWeight: FontWeight.w700)),
+            style: FilledButton.styleFrom(
+              backgroundColor: C.accent,
+              foregroundColor: C.onAccent,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          ),
+        ),
+        const SizedBox(width: 4),
+        IconButton(
+          tooltip: 'Für diese Version ausblenden',
+          onPressed: st.dismissUpdate,
+          icon: const Icon(Icons.close_rounded, size: 18, color: C.muted),
+        ),
+      ]),
     );
   }
 }

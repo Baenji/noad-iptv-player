@@ -421,6 +421,9 @@ void showUndo(BuildContext context, String text, VoidCallback undo) {
   m.showSnackBar(SnackBar(
     content: Text(text),
     duration: const Duration(seconds: 6),
+    persist: false,
+    showCloseIcon: true,
+    closeIconColor: C.muted,
     action: SnackBarAction(label: 'Rückgängig', onPressed: undo),
   ));
 }
@@ -428,7 +431,13 @@ void showUndo(BuildContext context, String text, VoidCallback undo) {
 void showInfo(BuildContext context, String text) {
   final m = ScaffoldMessenger.of(context);
   m.hideCurrentSnackBar();
-  m.showSnackBar(SnackBar(content: Text(text), duration: const Duration(seconds: 3)));
+  m.showSnackBar(SnackBar(
+    content: Text(text),
+    duration: const Duration(seconds: 3),
+    persist: false,
+    showCloseIcon: true,
+    closeIconColor: C.muted,
+  ));
 }
 
 String fmtDuration(Duration d) {
@@ -439,3 +448,18 @@ String fmtDuration(Duration d) {
 }
 
 String sectionIconLabel(Section s) => s.label;
+
+/// Menüeintrag mit Icon.
+class MenuRow extends StatelessWidget {
+  const MenuRow(this.icon, this.label, {super.key, this.color});
+  final IconData icon;
+  final String label;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) => Row(children: [
+        Icon(icon, size: 18, color: color ?? C.muted),
+        const SizedBox(width: 12),
+        Text(label),
+      ]);
+}

@@ -8,6 +8,7 @@ import '../models.dart';
 import '../services/m3u.dart';
 import '../services/net.dart';
 import '../services/storage.dart';
+import '../services/update.dart';
 import '../services/xtream.dart';
 
 /// Was in der Hauptfläche angezeigt wird.
@@ -22,7 +23,7 @@ class SourceStatus {
 }
 
 class AppState extends ChangeNotifier {
-  AppState(this._storage) {
+  AppState(this._storage, {this.appVersion = ''}) {
     sources = _storage.loadSources();
     lists = _storage.loadLists();
     if (!lists.any((l) => l.isFavorites)) {
@@ -38,7 +39,9 @@ class AppState extends ChangeNotifier {
 
     player = Player(configuration: const PlayerConfiguration(title: 'noAd IPTV Player'));
     video = VideoController(player);
-    player.setVolume(_storage.volume);
+    volume = _storage.volume;
+    sidebarCollapsed = _storage.sidebarCollapsed;
+    player.setVolume(volume);
     _subs.addAll([
       player.stream.playing.listen((_) => notifyListeners()),
       player.stream.buffering.listen((b) {
@@ -64,6 +67,36 @@ class AppState extends ChangeNotifier {
     for (final s in sources) {
       loadSection(s, Section.live);
     }
+    Future.delayed(const Duration(seconds: 3), checkUpdate);
+  }
+
+  final String appVersion;
+
+  // ------------------------------------------------------------- Oberfläche
+  late bool sidebarCollapsed;
+
+  void toggleSidebar() {
+    sidebarCollapsed = !sidebarCollapsed;
+    _storage.sidebarCollapsed = sidebarCollapsed;
+    notifyListeners();
+  }
+
+  // ---------------------------------------------------------------- Update
+  UpdateInfo? update;
+
+  Future<void> checkUpdate() async {
+    if (appVersion.isEmpty) return;
+    final u = await checkForUpdate(appVersion);
+    if (u != null && u.version != _storage.dismissedUpdate) {
+      update = u;
+      notifyListeners();
+    }
+  }
+
+  void dismissUpdate() {
+    _storage.dismissedUpdate = update?.version;
+    update = null;
+    notifyListeners();
   }
 
   final Storage _storage;
@@ -433,13 +466,24 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  late double volume;
+  double _volumeBeforeMute = 80;
+
   void setVolume(double v) {
-    player.setVolume(v);
-    _storage.volume = v;
+    volume = v.clamp(0, 100).toDouble();
+    player.setVolume(volume);
+    _storage.volume = volume;
     notifyListeners();
   }
 
-  double get volume => player.state.volume;
+  void toggleMute() {
+    if (volume > 0) {
+      _volumeBeforeMute = volume;
+      setVolume(0);
+    } else {
+      setVolume(_volumeBeforeMute > 0 ? _volumeBeforeMute : 80);
+    }
+  }
 
   void setFullscreen(bool v) {
     fullscreen = v;

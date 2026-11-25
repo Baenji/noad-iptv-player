@@ -77,6 +77,14 @@ class PlayerPanel extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             child: Stack(fit: StackFit.expand, children: [
               if (!st.fullscreen) const VideoSurface() else const ColoredBox(color: Colors.black),
+              if (cur != null)
+                Positioned.fill(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onDoubleTap: () => enterFullscreen(st),
+                    child: const SizedBox.expand(),
+                  ),
+                ),
               if (cur == null)
                 const EmptyState(
                   icon: Icons.play_circle_outline_rounded,
@@ -85,6 +93,7 @@ class PlayerPanel extends StatelessWidget {
                 ),
               if (cur != null) ...[
                 if (cur.isLive) const Positioned(top: 12, left: 12, child: LiveBadge()),
+                const Positioned(left: 12, bottom: 12, child: VolumeControl(compact: true)),
                 Positioned(
                   right: 12,
                   bottom: 12,
@@ -103,14 +112,6 @@ class PlayerPanel extends StatelessWidget {
                   ]),
                 ),
               ],
-              if (cur != null)
-                Positioned.fill(
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    onDoubleTap: () => enterFullscreen(st),
-                    child: const SizedBox.expand(),
-                  ),
-                ),
             ]),
           ),
         ),
@@ -122,6 +123,7 @@ class PlayerPanel extends StatelessWidget {
           _Key('Leertaste', 'Pause'),
           _Key('F', 'Vollbild'),
           _Key('↑ ↓', 'Sender'),
+          _Key('M', 'Stumm'),
           _Key('Strg/⌘ K', 'Suche'),
         ]),
       ]),
@@ -168,6 +170,7 @@ class _NowInfo extends StatelessWidget {
       Builder(
         builder: (ctx) => SecondaryButton(
           label: 'Zu Liste…',
+          icon: Icons.playlist_add_rounded,
           onPressed: () {
             final box = ctx.findRenderObject() as RenderBox;
             showAddToListMenu(ctx, item, box.localToGlobal(Offset(0, box.size.height + 4)));
@@ -414,15 +417,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                             onTap: () => st.zap(1),
                           ),
                         const Spacer(),
-                        const Icon(Icons.volume_up_rounded, color: C.text2, size: 20),
-                        SizedBox(
-                          width: 130,
-                          child: Slider(
-                            value: st.volume.clamp(0.0, 100.0).toDouble(),
-                            max: 100,
-                            onChanged: st.setVolume,
-                          ),
-                        ),
+                        const VolumeControl(),
                         if (cur != null) ...[
                           const SizedBox(width: 8),
                           _OverlayButton(
@@ -433,10 +428,25 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                             onTap: () => st.toggleFavorite(cur),
                           ),
                         ],
+                        if (cur != null) ...[
+                          const SizedBox(width: 8),
+                          Builder(
+                            builder: (bctx) => _OverlayButton(
+                              icon: Icons.playlist_add_rounded,
+                              tooltip: 'Zu Liste…',
+                              size: 44,
+                              onTap: () {
+                                final box = bctx.findRenderObject() as RenderBox;
+                                showAddToListMenu(bctx, cur, box.localToGlobal(const Offset(-120, -150)));
+                                _poke();
+                              },
+                            ),
+                          ),
+                        ],
                         if (st.zapList.length > 1) ...[
                           const SizedBox(width: 8),
                           _OverlayButton(
-                            icon: Icons.list_rounded,
+                            icon: Icons.format_list_bulleted_rounded,
                             tooltip: 'Liste (Z)',
                             size: 44,
                             onTap: toggleZap,
@@ -515,3 +525,54 @@ class _ZapPanel extends StatelessWidget {
 final fullscreenKey = GlobalKey<_FullscreenPlayerState>();
 
 void toggleZapPanel() => fullscreenKey.currentState?.toggleZap();
+
+/// Lautstärke: Klick aufs Symbol = stumm, Regler daneben.
+class VolumeControl extends StatelessWidget {
+  const VolumeControl({super.key, this.compact = false});
+
+  /// Kompakt mit dunklem Hintergrund (für das kleine Videofenster).
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final st = AppScope.of(context);
+    final v = st.volume;
+    final icon = v <= 0
+        ? Icons.volume_off_rounded
+        : v < 50
+            ? Icons.volume_down_rounded
+            : Icons.volume_up_rounded;
+    final row = Row(mainAxisSize: MainAxisSize.min, children: [
+      IconButton(
+        tooltip: v <= 0 ? 'Ton an (M)' : 'Stumm (M)',
+        visualDensity: VisualDensity.compact,
+        iconSize: 20,
+        color: C.text,
+        onPressed: st.toggleMute,
+        icon: Icon(icon),
+      ),
+      SizedBox(
+        width: compact ? 96 : 130,
+        child: SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            activeTrackColor: C.text,
+            inactiveTrackColor: const Color(0x40FFFFFF),
+            trackHeight: 3,
+          ),
+          child: Slider(
+            value: v.clamp(0.0, 100.0).toDouble(),
+            max: 100,
+            semanticFormatterCallback: (x) => 'Lautstärke ${x.round()} %',
+            onChanged: st.setVolume,
+          ),
+        ),
+      ),
+    ]);
+    if (!compact) return row;
+    return Container(
+      padding: const EdgeInsets.only(right: 4),
+      decoration: BoxDecoration(color: C.overlay, borderRadius: BorderRadius.circular(18)),
+      child: row,
+    );
+  }
+}

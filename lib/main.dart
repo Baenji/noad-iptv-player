@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'services/storage.dart';
@@ -30,7 +31,11 @@ Future<void> main() async {
   }
 
   final storage = await Storage.open();
-  runApp(NoAdApp(state: AppState(storage)));
+  var version = '';
+  try {
+    version = (await PackageInfo.fromPlatform()).version;
+  } catch (_) {}
+  runApp(NoAdApp(state: AppState(storage, appVersion: version)));
 }
 
 class NoAdApp extends StatelessWidget {
