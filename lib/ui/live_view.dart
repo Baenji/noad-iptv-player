@@ -53,7 +53,8 @@ class _HeaderState extends State<Header> {
         Text(widget.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
         if (widget.subtitle != null) ...[
           const SizedBox(width: 14),
-          Flexible(
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 260),
             child: Text(widget.subtitle!,
                 overflow: TextOverflow.ellipsis, style: const TextStyle(color: C.faint)),
           ),
@@ -94,7 +95,8 @@ class _HeaderState extends State<Header> {
           ),
         ),
         const Spacer(),
-        if (accText.isNotEmpty) Text(accText, style: const TextStyle(fontSize: 12, color: C.faint)),
+        if (accText.isNotEmpty)
+          Text(accText, textAlign: TextAlign.right, style: const TextStyle(fontSize: 12, color: C.faint)),
       ]),
     );
   }
