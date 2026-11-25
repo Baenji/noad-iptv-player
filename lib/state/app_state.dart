@@ -470,7 +470,26 @@ class AppState extends ChangeNotifier {
     player.playOrPause();
   }
 
+  /// Ansichten mit eingebautem Player (dort läuft die Wiedergabe nach dem Vollbild weiter).
+  bool get viewHasPlayer => view == AppView.live || view == AppView.list || view == AppView.search;
+
   Future<void> stop() async {
+    final cur = current;
+    if (cur != null && !cur.isLive) {
+      // Position sichern, damit „Weiterschauen“ an der richtigen Stelle startet.
+      final pos = player.state.position;
+      final dur = player.state.duration;
+      if (dur > Duration.zero && pos.inSeconds >= 10) {
+        progress[cur.key] = Progress(
+          item: cur,
+          position: pos,
+          duration: dur,
+          updated: DateTime.now(),
+          seriesName: currentSeriesName,
+        );
+      }
+      _saveProgressSoon(force: true);
+    }
     await player.stop();
     current = null;
     playerError = null;

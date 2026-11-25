@@ -19,6 +19,8 @@ Future<void> enterFullscreen(AppState st) async {
 
 Future<void> exitFullscreen(AppState st) async {
   st.setFullscreen(false);
+  // Filme/Episoden aus Ansichten ohne Player: stoppen statt unsichtbar weiterlaufen.
+  if (st.current != null && !st.viewHasPlayer) st.stop();
   try {
     await windowManager.setFullScreen(false);
   } catch (_) {}
