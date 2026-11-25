@@ -1,0 +1,92 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter --version
+      - run: flutter pub get
+      - name: Paket-Versionen
+        run: flutter pub deps --style=compact | head -40
+      - name: Analyse (nur Fehler brechen ab)
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
+
+  windows:
+    runs-on: windows-latest
+    needs: analyze
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter build windows --release
+      - name: Version lesen
+        shell: bash
+        run: echo "APP_VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: *//; s/+.*//')" >> $GITHUB_ENV
+      - name: Installer bauen (Inno Setup)
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            choco install innosetup -y --no-progress
+          }
+          & $iscc installer\noad-iptv.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: noAd-IPTV-Windows-Setup
+          path: dist/*.exe
+          if-no-files-found: error
+
+  macos:
+    runs-on: macos-latest
+    needs: analyze
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter build macos --release
+      - name: App zippen
+        run: |
+          mkdir -p dist
+          cd build/macos/Build/Products/Release
+          ditto -c -k --keepParent "noAd IPTV Player.app" "$GITHUB_WORKSPACE/dist/noAd-IPTV-macOS.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: noAd-IPTV-macOS
+          path: dist/*.zip
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [windows, macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true

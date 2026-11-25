@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "de.noad" "\0"
-            VALUE "FileDescription", "noad_iptv" "\0"
+            VALUE "CompanyName", "noAd" "\0"
+            VALUE "FileDescription", "noAd IPTV Player" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "noad_iptv" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 de.noad. All rights reserved." "\0"
-            VALUE "OriginalFilename", "noad_iptv.exe" "\0"
-            VALUE "ProductName", "noad_iptv" "\0"
+            VALUE "InternalName", "noAdIPTV" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 Benjamin Stöver. All rights reserved." "\0"
+            VALUE "OriginalFilename", "noAdIPTV.exe" "\0"
+            VALUE "ProductName", "noAd IPTV Player" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
