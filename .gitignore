@@ -1,0 +1,18 @@
+# Flutter/Dart
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.iml
+.idea/
+.vscode/
+.DS_Store
+# Platform build leftovers
+macos/Flutter/ephemeral/
+macos/Pods/
+windows/flutter/ephemeral/
+**/xcuserdata/
+dist/
