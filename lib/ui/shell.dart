@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../models.dart';
@@ -107,6 +108,7 @@ class Shell extends StatelessWidget {
             child: Column(children: [
               if (st.update != null) const _UpdateBanner(),
               Expanded(child: content),
+              if (st.current != null && !st.viewHasPlayer && !st.fullscreen) const MiniPlayer(),
             ]),
           ),
         ]),
@@ -245,6 +247,116 @@ class _UpdateBanner extends StatelessWidget {
           tooltip: 'Für diese Version ausblenden',
           onPressed: st.dismissUpdate,
           icon: const Icon(Icons.close_rounded, size: 18, color: C.muted),
+        ),
+      ]),
+    );
+  }
+}
+
+/// Schmale Player-Leiste unten, wenn die aktuelle Ansicht keinen Player hat
+/// (z. B. Live-TV läuft weiter, während du durch Filme stöberst).
+class MiniPlayer extends StatelessWidget {
+  const MiniPlayer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final st = AppScope.of(context);
+    final cur = st.current!;
+    final src = st.sourceById(cur.sourceId);
+    final cat = cur.isLive ? st.categoryName(cur) : '';
+    final sub = [src?.name ?? '', cat].where((e) => e.isNotEmpty).join(' · ');
+    final backView = cur.isLive ? AppView.live : AppView.resume;
+    return Container(
+      height: 76,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: const BoxDecoration(
+        color: C.sidebar,
+        border: Border(top: BorderSide(color: C.border)),
+      ),
+      child: Row(children: [
+        // Kleines Live-Bild, Klick = Vollbild
+        Tooltip(
+          message: 'Vollbild (F)',
+          child: GestureDetector(
+            onTap: () => enterFullscreen(st),
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: SizedBox(
+                  width: 96,
+                  height: 54,
+                  child: Stack(fit: StackFit.expand, children: [
+                    const ColoredBox(color: Colors.black),
+                    Video(controller: st.video, controls: NoVideoControls, fill: Colors.black),
+                    if (st.buffering)
+                      const Center(
+                        child: SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: C.accent),
+                        ),
+                      ),
+                  ]),
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: [
+                if (cur.isLive) ...[
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: const BoxDecoration(color: C.live, shape: BoxShape.circle),
+                  ),
+                  const SizedBox(width: 6),
+                ],
+                Flexible(
+                  child: Text(cur.name,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                ),
+              ]),
+              if (sub.isNotEmpty) ...[
+                const SizedBox(height: 3),
+                Text(sub,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 12, color: C.muted)),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(width: 12),
+        IconButton(
+          tooltip: st.player.state.playing ? 'Pause (Leertaste)' : 'Weiter (Leertaste)',
+          onPressed: st.togglePlay,
+          icon: Icon(st.player.state.playing ? Icons.pause_rounded : Icons.play_arrow_rounded, color: C.text),
+        ),
+        const VolumeControl(),
+        const SizedBox(width: 4),
+        IconButton(
+          tooltip: 'Vollbild (F)',
+          onPressed: () => enterFullscreen(st),
+          icon: const Icon(Icons.fullscreen_rounded, color: C.text),
+        ),
+        const SizedBox(width: 4),
+        SecondaryButton(
+          label: cur.isLive ? 'Zu Live-TV' : 'Öffnen',
+          icon: Icons.open_in_full_rounded,
+          onPressed: () => st.showView(backView),
+        ),
+        const SizedBox(width: 4),
+        IconButton(
+          tooltip: 'Wiedergabe beenden',
+          onPressed: st.stop,
+          icon: const Icon(Icons.close_rounded, color: C.muted),
         ),
       ]),
     );
