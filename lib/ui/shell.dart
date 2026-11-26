@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:media_kit_video/media_kit_video.dart';
+import 'package:media_kit_video/media_kit_video.dart' show Video, NoVideoControls;
 import 'package:url_launcher/url_launcher.dart';
 
 import '../models.dart';
