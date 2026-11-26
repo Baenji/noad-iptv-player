@@ -32,7 +32,7 @@ Future<void> main() async {
 
   // Demo-Modus: flutter run -d macos --dart-define=NOAD_DEMO=true
   const demo = bool.fromEnvironment('NOAD_DEMO');
-  final storage = await Storage.open(profile: demo ? 'demo' : null);
+  final storage = await Storage.open(profile: demo ? 'demo2' : null);
   var version = '';
   try {
     version = (await PackageInfo.fromPlatform()).version;

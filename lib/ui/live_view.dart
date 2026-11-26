@@ -285,6 +285,7 @@ class ItemList extends StatelessWidget {
     Widget tile(int i) => ItemRow(
           key: ValueKey(items[i].key),
           item: items[i],
+          reserveTrailing: reorderList != null,
           selected: st.current?.key == items[i].key,
           showSource: showSource,
           onOpenSeries: onOpenSeries,
@@ -320,10 +321,14 @@ class ItemRow extends StatelessWidget {
     required this.selected,
     this.showSource = false,
     this.onOpenSeries,
+    this.reserveTrailing = false,
   });
 
   final MediaItem item;
   final bool selected;
+
+  /// Platz rechts frei lassen (Sortier-Griff in eigenen Listen).
+  final bool reserveTrailing;
   final bool showSource;
   final void Function(MediaItem)? onOpenSeries;
 
@@ -343,7 +348,7 @@ class ItemRow extends StatelessWidget {
         radius: 0,
         selected: selected,
         selectedColor: C.surfaceSel,
-        padding: const EdgeInsets.fromLTRB(16, 0, 22, 0),
+        padding: EdgeInsets.fromLTRB(16, 0, reserveTrailing ? 56 : 22, 0),
         onTap: () => _activate(context),
         onSecondaryTapDown: (d) => showItemMenu(context, item, d.globalPosition),
         child: Row(children: [
