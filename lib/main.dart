@@ -30,12 +30,14 @@ Future<void> main() async {
     });
   }
 
-  final storage = await Storage.open();
+  // Demo-Modus: flutter run -d macos --dart-define=NOAD_DEMO=true
+  const demo = bool.fromEnvironment('NOAD_DEMO');
+  final storage = await Storage.open(profile: demo ? 'demo' : null);
   var version = '';
   try {
     version = (await PackageInfo.fromPlatform()).version;
   } catch (_) {}
-  runApp(NoAdApp(state: AppState(storage, appVersion: version)));
+  runApp(NoAdApp(state: AppState(storage, appVersion: version, demo: demo)));
 }
 
 class NoAdApp extends StatelessWidget {

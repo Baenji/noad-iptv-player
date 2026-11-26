@@ -23,7 +23,7 @@ class SourceStatus {
 }
 
 class AppState extends ChangeNotifier {
-  AppState(this._storage, {this.appVersion = ''}) {
+  AppState(this._storage, {this.appVersion = '', this.demo = false}) {
     sources = _storage.loadSources();
     lists = _storage.loadLists();
     if (!lists.any((l) => l.isFavorites)) {
@@ -31,6 +31,9 @@ class AppState extends ChangeNotifier {
     }
     for (final p in _storage.loadProgress()) {
       progress[p.item.key] = p;
+    }
+    if (demo && sources.isEmpty) {
+      sources.add(Source(id: 'demo', name: 'Demo', type: SourceType.m3uUrl, url: demoPlaylistUrl));
     }
     final last = _storage.lastSourceId;
     currentSourceId = sources.any((s) => s.id == last)
@@ -71,6 +74,23 @@ class AppState extends ChangeNotifier {
   }
 
   final String appVersion;
+
+  /// Demo-Modus (für Screenshots): eigenes Profil mit Beispiel-Playlist.
+  final bool demo;
+  static const demoPlaylistUrl =
+      'https://raw.githubusercontent.com/Baenji/noad-iptv-player/main/docs/demo.m3u';
+
+  void _seedDemo() {
+    if (!demo || _storage.demoSeeded) return;
+    final live = catalog('demo', Section.live).items;
+    if (live.isEmpty) return;
+    List<MediaItem> cat(String c) => live.where((i) => i.categoryId == c).toList();
+    favorites.items.addAll([...cat('Unterhaltung').take(2), ...cat('Sport').take(1), ...cat('Dokumentation').take(1)]);
+    lists.add(UserList(id: 'demo_sport', name: 'Sport', color: 0xFF7AA7FF, items: cat('Sport')));
+    lists.add(UserList(id: 'demo_kids', name: 'Kids', color: 0xFFF08BD0, items: cat('Kinder')));
+    _storage.saveLists(lists);
+    _storage.demoSeeded = true;
+  }
 
   // ------------------------------------------------------------- Oberfläche
   late bool sidebarCollapsed;
@@ -217,6 +237,7 @@ class AppState extends ChangeNotifier {
       }
       _sectionError.remove(key);
       if (status.state != LoadState.error) status.state = LoadState.ready;
+      _seedDemo();
     } catch (e) {
       final msg = friendlyError(e);
       if (source.type == SourceType.xtream) {

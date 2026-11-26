@@ -79,9 +79,10 @@ Map<Section, Catalog> parseM3u(String text, String sourceId) {
     } else {
       final url = line;
       final lower = url.toLowerCase();
-      final section = lower.contains('/movie/')
+      final type = (attrs?['tvg-type'] ?? attrs?['type'] ?? '').toLowerCase();
+      final section = (type == 'movie' || type == 'vod' || lower.contains('/movie/'))
           ? Section.movie
-          : lower.contains('/series/')
+          : (type == 'series' || lower.contains('/series/'))
               ? Section.series
               : Section.live;
       final display = (name ?? '').isNotEmpty

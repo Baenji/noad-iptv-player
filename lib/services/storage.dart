@@ -9,7 +9,16 @@ class Storage {
   Storage(this._prefs);
   final SharedPreferences _prefs;
 
-  static Future<Storage> open() async => Storage(await SharedPreferences.getInstance());
+  /// [profile]: getrenntes Datenprofil (z. B. „demo“), echte Daten bleiben unberührt.
+  static Future<Storage> open({String? profile}) async {
+    if (profile != null && profile.isNotEmpty) {
+      SharedPreferences.setPrefix('flutter.$profile.');
+    }
+    return Storage(await SharedPreferences.getInstance());
+  }
+
+  bool get demoSeeded => _prefs.getBool('demoSeeded') ?? false;
+  set demoSeeded(bool v) => _prefs.setBool('demoSeeded', v);
 
   List<T> _readList<T>(String key, T Function(Map<String, dynamic>) f) {
     final raw = _prefs.getString(key);
