@@ -91,7 +91,7 @@ class PlayerPanel extends StatelessWidget {
                 const EmptyState(
                   icon: Icons.play_circle_outline_rounded,
                   title: 'Nichts ausgewählt',
-                  text: 'Doppelklick auf einen Sender startet die Wiedergabe.',
+                  text: 'Klick auf einen Sender startet die Wiedergabe.',
                 ),
               if (cur != null) ...[
                 if (cur.isLive) const Positioned(top: 12, left: 12, child: LiveBadge()),

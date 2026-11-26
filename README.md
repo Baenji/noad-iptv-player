@@ -39,7 +39,7 @@ Live-TV, Filme und Serien aus deinen Xtream- und M3U-Zugängen – in einer aufg
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/screenshots/fullscreen.png" alt="Vollbild-Player"></td>
+    <td width="50%"><img src="docs/screenshots/fullscreen.jpg" alt="Vollbild-Player"></td>
     <td width="50%"><img src="docs/screenshots/filme.png" alt="Filme mit Postern"></td>
   </tr>
   <tr>
@@ -48,7 +48,7 @@ Live-TV, Filme und Serien aus deinen Xtream- und M3U-Zugängen – in einer aufg
   </tr>
   <tr>
     <td width="50%"><img src="docs/screenshots/quelle.png" alt="Quelle hinzufügen"></td>
-    <td width="50%"><img src="docs/screenshots/listen.png" alt="Eigene Listen und eingeklappte Seitenleiste"></td>
+    <td width="50%"><img src="docs/screenshots/listen.png" alt="Eigene Liste „Sport“"></td>
   </tr>
   <tr>
     <td align="center"><sub>Quelle hinzufügen – Xtream, M3U-Link oder Datei</sub></td>
@@ -140,7 +140,7 @@ Eine Handy-Version ist geplant.
 ## Danksagung
 
 - Wiedergabe über [libmpv](https://mpv.io) mit [media_kit](https://github.com/media-kit/media-kit), Oberfläche mit [Flutter](https://flutter.dev)
-- Die Screenshots zeigen erfundene Sendernamen und Ausschnitte aus Open-Movie-Projekten der [Blender Foundation](https://studio.blender.org/films/) (CC BY)
+- Die Screenshots zeigen frei erfundene Sendernamen und Ausschnitte aus den Open Movies „Big Buck Bunny“ und „Sintel“ – © Blender Foundation | [www.blender.org](https://www.blender.org), lizenziert unter [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)
 
 <br>
 
