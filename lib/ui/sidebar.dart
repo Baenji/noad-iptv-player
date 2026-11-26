@@ -29,14 +29,20 @@ class Sidebar extends StatelessWidget {
         final c = box.maxWidth < 200;
         return Column(children: [
           Padding(
-            padding: c ? const EdgeInsets.fromLTRB(0, 22, 0, 18) : const EdgeInsets.fromLTRB(22, 22, 12, 18),
+            padding: c ? const EdgeInsets.fromLTRB(0, 22, 0, 10) : const EdgeInsets.fromLTRB(22, 18, 10, 14),
             child: c
-                ? const Center(child: AppLogo(size: 30))
-                : const Row(children: [
-                    AppLogo(size: 30),
-                    SizedBox(width: 10),
-                    Text('noAd ', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
-                    Text('IPTV', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 17, color: C.muted)),
+                ? Column(children: [
+                    const AppLogo(size: 30),
+                    const SizedBox(height: 10),
+                    _SidebarToggle(collapsed: true, onTap: st.toggleSidebar),
+                  ])
+                : Row(children: [
+                    const AppLogo(size: 30),
+                    const SizedBox(width: 10),
+                    const Text('noAd ', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
+                    const Text('IPTV', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 17, color: C.muted)),
+                    const Spacer(),
+                    _SidebarToggle(collapsed: false, onTap: st.toggleSidebar),
                   ]),
           ),
           Expanded(
@@ -63,28 +69,54 @@ class Sidebar extends StatelessWidget {
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-            decoration: const BoxDecoration(border: Border(top: BorderSide(color: C.border))),
-            child: Tile(
-              height: 40,
-              tooltip: c ? 'Ausklappen (Strg/⌘ B)' : null,
-              onTap: st.toggleSidebar,
-              padding: c ? EdgeInsets.zero : const EdgeInsets.symmetric(horizontal: 10),
-              child: c
-                  ? const Center(child: Icon(Icons.keyboard_double_arrow_right_rounded, size: 20, color: C.muted))
-                  : const Row(children: [
-                      Icon(Icons.keyboard_double_arrow_left_rounded, size: 20, color: C.muted),
-                      SizedBox(width: 12),
-                      Expanded(child: Text('Einklappen', style: TextStyle(color: C.muted))),
-                      Text('Strg/⌘ B', style: TextStyle(fontSize: 11, color: C.faint)),
-                    ]),
-            ),
-          ),
         ]);
       }),
     );
   }
+}
+
+/// Klassisches „Seitenleiste“-Symbol zum Ein-/Ausklappen.
+class _SidebarToggle extends StatelessWidget {
+  const _SidebarToggle({required this.collapsed, required this.onTap});
+  final bool collapsed;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => IconButton(
+        tooltip: collapsed ? 'Seitenleiste einblenden (Strg/⌘ B)' : 'Seitenleiste ausblenden (Strg/⌘ B)',
+        onPressed: onTap,
+        hoverColor: const Color(0x14FFFFFF),
+        icon: const CustomPaint(size: Size(20, 18), painter: _SidebarIconPainter()),
+      );
+}
+
+class _SidebarIconPainter extends CustomPainter {
+  const _SidebarIconPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final stroke = Paint()
+      ..color = C.muted
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.6;
+    final r = RRect.fromRectAndRadius(
+      Rect.fromLTWH(0.8, 0.8, size.width - 1.6, size.height - 1.6),
+      const Radius.circular(4),
+    );
+    canvas.drawRRect(r, stroke);
+    final x = size.width * 0.38;
+    canvas.drawLine(Offset(x, 1), Offset(x, size.height - 1), stroke);
+    final line = Paint()
+      ..color = C.muted
+      ..strokeWidth = 1.4
+      ..strokeCap = StrokeCap.round;
+    for (final y in [size.height * 0.32, size.height * 0.5]) {
+      canvas.drawLine(Offset(3.6, y), Offset(x - 2.6, y), line);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _Group extends StatelessWidget {
