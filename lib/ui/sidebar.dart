@@ -227,10 +227,20 @@ class _ListItem extends StatelessWidget {
   }
 }
 
-class _SourceItem extends StatelessWidget {
+class _SourceItem extends StatefulWidget {
   const _SourceItem({required this.c, required this.source});
   final bool c;
   final Source source;
+
+  @override
+  State<_SourceItem> createState() => _SourceItemState();
+}
+
+class _SourceItemState extends State<_SourceItem> {
+  bool _hover = false;
+
+  bool get c => widget.c;
+  Source get source => widget.source;
 
   @override
   Widget build(BuildContext context) {
@@ -246,7 +256,10 @@ class _SourceItem extends StatelessWidget {
     final status = s?.state == LoadState.loading
         ? const SizedBox(width: 10, height: 10, child: CircularProgressIndicator(strokeWidth: 1.5, color: C.warn))
         : Container(width: 8, height: 8, decoration: BoxDecoration(color: dot, shape: BoxShape.circle));
-    return Padding(
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hover = true),
+      onExit: (_) => setState(() => _hover = false),
+      child: Padding(
       padding: const EdgeInsets.only(bottom: 2),
       child: Tile(
         height: c ? 44 : 36,
@@ -279,10 +292,28 @@ class _SourceItem extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(color: sel ? C.text : C.text2, fontWeight: sel ? FontWeight.w600 : null)),
                 ),
-                TypeBadge(source.typeLabel),
+                if (_hover && s?.state != LoadState.loading)
+                  SizedBox(
+                    width: 28,
+                    height: 28,
+                    child: IconButton(
+                      tooltip: 'Playlist aktualisieren',
+                      padding: EdgeInsets.zero,
+                      iconSize: 17,
+                      color: C.muted,
+                      hoverColor: const Color(0x1A3EE0B0),
+                      onPressed: () {
+                        st.reloadSource(source);
+                        showInfo(context, '„${source.name}“ wird aktualisiert…');
+                      },
+                      icon: const Icon(Icons.refresh_rounded),
+                    ),
+                  )
+                else
+                  TypeBadge(source.typeLabel),
               ]),
       ),
-    );
+    ));
   }
 
   Future<void> _menu(BuildContext context, Offset pos, AppState st) async {
